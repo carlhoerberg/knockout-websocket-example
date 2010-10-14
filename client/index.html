@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+<head>
+	<script src='http://ajax.microsoft.com/ajax/jquery/jquery-1.4.2.min.js'></script>
+	<script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
+  <script>
+  $(document).ready(function(){
+    if(!("WebSocket" in window)) {
+      alert("Sorry, the build of your browser does not support WebSockets. Please use latest Chrome or Webkit nightly");
+      return;
+    }
+    
+		$("#submit").click(insert);
+
+    ws = new WebSocket("ws://127.0.0.1:8080/");
+    ws.onmessage = function(evt) { 
+      data = eval("(" + evt.data + ")");
+			$("#contactTemplate").tmpl(data).appendTo("#contacts");
+    };
+    ws.onclose = function() {
+      alert("socket closed");
+    };
+    ws.onopen = function() {
+      //alert("connected...");
+    };
+		ws.onerror = function(error) {
+			alert(error);
+		};
+  });
+	var insert = function(){
+		var contact = {
+			name: $("#name").val(),
+			phone: $("#phone").val()
+		};
+		ws.send(JSON.stringify(contact));
+	}
+  </script>
+</head>
+<body>
+	<script id="contactTemplate" type="text/x-jquery-tmpl">
+		<div>
+			Name: ${ name } <br />
+			Phone: ${ phone }
+		</div>
+	</script>
+	<div id="form">
+		Name:	<input type="text" id="name"/>
+		Phone: <input type="text" id="phone" />	
+		<input type="submit" id="submit" />
+	</div>
+  <div id="contacts">
+  </div>
+</body>
+</html>
