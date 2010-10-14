@@ -4,6 +4,10 @@
 <head>
 	<script src='http://ajax.microsoft.com/ajax/jquery/jquery-1.4.2.min.js'></script>
 	<script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
+	<script src="js/knockout-latest.min.js"></script>
+	<script src='js/swfobject.js'></script>
+	<script src='js/FABridge.js'></script>
+	<script src='js/web_socket.js'></script>
   <script>
   $(document).ready(function(){
     if(!("WebSocket" in window)) {
@@ -11,45 +15,54 @@
       return;
     }
     
-		$("#submit").click(insert);
-
     ws = new WebSocket("ws://127.0.0.1:8080/");
     ws.onmessage = function(evt) { 
       data = eval("(" + evt.data + ")");
-			$("#contactTemplate").tmpl(data).appendTo("#contacts");
+			//$("#contactTemplate").tmpl(data).appendTo("#contacts");
+			viewModel.contacts.push(data);
     };
     ws.onclose = function() {
-      alert("socket closed");
+      //alert("socket closed");
     };
     ws.onopen = function() {
-      //alert("connected...");
     };
-		ws.onerror = function(error) {
-			alert(error);
-		};
+
+		ko.applyBindings(viewModel);
   });
-	var insert = function(){
-		var contact = {
-			name: $("#name").val(),
-			phone: $("#phone").val()
-		};
-		ws.send(JSON.stringify(contact));
+	var contact = function(name, phone) {
+		this.name = new ko.observable(name);
+		this.phone = new ko.observable(phone);
 	}
+	var viewModel = {
+		contacts : ko.observableArray([]),
+		editItem : {
+			name : "",
+			phone : ""
+		},
+		add : function(form) {
+		  var json = ko.utils.stringifyJson(this.editItem)
+			ws.send(json);
+			return false;
+		}
+	};
   </script>
 </head>
 <body>
 	<script id="contactTemplate" type="text/x-jquery-tmpl">
-		<div>
-			Name: ${ name } <br />
-			Phone: ${ phone }
-		</div>
+		<ul>
+			{{each contacts}}
+				<li>
+					${name}<br/>${phone}
+				</li>
+			{{/each}}
+		</ul>
 	</script>
-	<div id="form">
-		Name:	<input type="text" id="name"/>
-		Phone: <input type="text" id="phone" />	
-		<input type="submit" id="submit" />
-	</div>
-  <div id="contacts">
+	<form data-bind="submit:add">
+		Name:	<input type="text" data-bind="value:editItem.name"/>
+		Phone: <input type="text" data-bind="value:editItem.phone"/>	
+		<input type="submit" value="OK" />
+	</form>
+  <div id="contacts" data-bind="template: 'contactTemplate'">
   </div>
 </body>
 </html>
