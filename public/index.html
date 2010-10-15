@@ -11,7 +11,7 @@
 	<script src='js/json2.js'></script>
   <script>
   $(document).ready(function(){
-    ws = new WebSocket("ws://127.0.0.1:8080/");
+    ws = new WebSocket("ws://"+location.hostname+":8080/");
     ws.onmessage = function(evt) { 
       var data = JSON.parse(evt.data);
 			switch (data.action)
