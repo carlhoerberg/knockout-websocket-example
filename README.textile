@@ -1,2 +1,3 @@
 h1. Knockout WebSockets Example
+
 A static page with the javascript lib "Knockout":http://knockoutjs.com/. Post new items to a "Sinatra app":http://www.sinatrarb.com/, which in turn saves it to a SQLlite db and then pushes notifications via the message queue "Beanstalk":http://kr.github.com/beanstalkd/. An EventMachine listens to the Beanstalk queue (EM-Jack:http://github.com/dj2/em-jack) and pushes the json data to its WebSocket subscribers (EM-WebSocket:http://github.com/igrigorik/em-websocket). 
