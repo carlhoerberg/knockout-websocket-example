@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+<head>
+	<script src='http://ajax.microsoft.com/ajax/jquery/jquery-1.4.2.min.js'></script>
+	<script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
+	<script src="js/knockout-latest.js"></script>
+	<script src='js/swfobject.js'></script>
+	<script src='js/FABridge.js'></script>
+	<script src='js/web_socket.js'></script>
+	<script src='js/json2.js'></script>
+  <script>
+  $(document).ready(function(){
+    ws = new WebSocket("ws://127.0.0.1:8080/");
+    ws.onmessage = function(evt) { 
+      var data = JSON.parse(evt.data);
+			switch (data.action)
+			{
+				case "add":
+					viewModel.contacts.push(data.item);
+					viewModel.contacts.sort(sortFunc);
+					break;
+				case "delete":
+					viewModel.contacts.remove(function(item) { return item.id == data.id });
+					break;
+				case "update":
+					viewModel.contacts.remove(function(item) { return item.id == data.id });
+					viewModel.contacts.push(data.item);
+					viewModel.contacts.sort(sortFunc);
+					break;	
+			}
+    };
+		$.getJSON('/contacts', function(data){
+			for(var i = 0; i < data.length; i++)
+				viewModel.contacts.push(data[i]);
+			viewModel.contacts.sort(sortFunc);
+		});
+
+		ko.applyBindings(viewModel);
+
+		$(".deleteForm").live('submit', postSelf);
+		$(".editForm").live('submit', postSelf);
+		$("#addForm").submit(postSelf);
+  });
+	var postSelf = function(){
+			$.post(this.action, $(this).serialize());
+			return false;
+	};
+	var sortFunc = function(a,b){
+		return a.id - b.id;
+	}
+	var viewModel = {
+		contacts : ko.observableArray([])
+	};
+  </script>
+</head>
+<body>
+	<script id="contactTemplate" type="text/x-jquery-tmpl">
+		<ul>
+			{{each contacts}}
+				<li>
+					${name}<br/>${phone}<br/>
+					<form class="deleteForm" method="POST" action="/contact/delete/${id}">
+						<input type="submit" value="Delete"/>
+					</form>
+					<form class="editForm" method="POST" action="/contact/edit/${id}">
+						<fieldset>
+							<legend>Edit</legend>
+							Name:	<input type="text" name="name" value="${name}"/><br/>
+							Phone: <input type="text" name="phone" value="${phone}"/><br/>
+							<input type="submit" value="OK"/>
+						</fieldset>
+					</form>
+				</li>
+			{{/each}}
+		</ul>
+	</script>
+	<form method="post" action="/contact/create" id="addForm">
+		<fieldset>
+			<legend>Add</legend>
+			Name:	<input type="text" name="name"/> 
+			Phone: <input type="text" name="phone"/>	
+			<input type="submit" value="OK" />
+		</fieldset>
+	</form>
+  <div id="contacts" data-bind="template: 'contactTemplate'">
+  </div>
+</body>
+</html>
