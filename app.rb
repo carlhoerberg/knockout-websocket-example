@@ -19,6 +19,8 @@ configure do
 	DataMapper.auto_upgrade!
 end
 
+set :public, 'public'
+
 get '/' do
 	send_file(File.join('public', 'index.html'))
 end
@@ -31,7 +33,7 @@ end
 
 post '/contact/create' do
 	c = Contact.create params
-	broadcast("add", params[:id], c)
+	broadcast("add", c.id, c)
 end
 
 post '/contact/delete/:id' do
