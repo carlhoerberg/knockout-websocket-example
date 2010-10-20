@@ -1,6 +1,8 @@
 h1. Knockout WebSockets Example
 
-A static page with the javascript lib "Knockout":http://knockoutjs.com/ and "jQuery Templating plugin":http://api.jquery.com/category/plugins/templates/. It posts new items to a "Sinatra app":http://www.sinatrarb.com/, which in turn saves it to a SQLlite db and then pushes notifications via the message queue "Beanstalk":http://kr.github.com/beanstalkd/. An EventMachine listens to the Beanstalk queue ("EM-Jack":http://github.com/dj2/em-jack) and pushes the json data to its WebSocket subscribers ("EM-WebSocket":http://github.com/igrigorik/em-websocket). Knockout then addes the items to it's observable array, which is rendered with the jquery templating engine. 
+This is a very simple application which show how easy it is to sync information between clients of a web app in real time. The Knockout javascript library allows us to maintain one model and render the UI using jQuery's templating plugin, and any changes to the model are automatically reflected in the UI. And thanks to WebSockets can we update that model in realtime. 
+
+The client posts changes to a simple Sinatra app (which store it's state in a simple SQLite database). The Sinatra apps then pushes notification of the change through the message queue Beanstalk":http://kr.github.com/beanstalkd/. The WebSocket server ("EM-WebSocket":http://github.com/igrigorik/em-websocket) listens on the message queue (using "EM-Jack":http://github.com/dj2/em-jack) and simply forward the messages on the message queue to all it's WebSockets subscribers. The client picks up the message and look what kind of change that was made and updates it's model accordingly. This is realtime data collaboration, all this in a very few line of code.  
 
 h2. Usage
 
